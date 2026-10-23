@@ -1,0 +1,16 @@
+# Python 虛擬環境与快取
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# 作業系統與編輯器暫存檔
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# 本機穿透工具執行檔
+cloudflared.exe
+

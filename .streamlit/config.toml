@@ -1,0 +1,7 @@
+[server]
+# 限制單一上傳檔案上限為 50 MB，保護雲端與本機伺服器記憶體
+maxUploadSize = 50
+
+[browser]
+# 關閉 Streamlit 預設的匿名使用數據收集
+gatherUsageStats = false
