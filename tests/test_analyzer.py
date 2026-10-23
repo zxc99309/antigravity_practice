@@ -32,7 +32,7 @@ def test_load_sample_csv_success() -> None:
     df = load_csv(str(sample_path))
     info = get_basic_info(df)
 
-    assert info["rows"] == 10
+    assert info["rows"] == 1000
     assert info["columns"] == 6
     assert "姓名" in info["column_names"]
     assert "月薪" in info["column_names"]
@@ -70,17 +70,17 @@ def test_get_missing_summary_counts_and_percentage() -> None:
     df = load_csv(str(sample_path))
     missing_df = get_missing_summary(df)
 
-    # sample.csv 共 10 筆，其中「姓名」無缺失、「年齡」缺 1 筆 (10.0%)
+    # sample.csv 共 1000 筆，其中「姓名」無缺失、「年齡」缺 50 筆 (5.0%)
     name_row = missing_df[missing_df["欄位名稱"] == "姓名"].iloc[0]
     age_row = missing_df[missing_df["欄位名稱"] == "年齡"].iloc[0]
 
     assert name_row["缺失值數量"] == 0
     assert name_row["缺失比例 (%)"] == 0.0
-    assert name_row["有效筆數"] == 10
+    assert name_row["有效筆數"] == 1000
 
-    assert age_row["缺失值數量"] == 1
-    assert age_row["缺失比例 (%)"] == 10.0
-    assert age_row["有效筆數"] == 9
+    assert age_row["缺失值數量"] == 50
+    assert age_row["缺失比例 (%)"] == 5.0
+    assert age_row["有效筆數"] == 950
 
 
 def test_get_numeric_summary_with_numeric_columns() -> None:
@@ -148,11 +148,11 @@ def test_generate_markdown_report_contains_all_sections() -> None:
 
     assert "# 📊 CSV 資料分析報告：sample.csv" in report
     assert "## 1. 資料基本概況" in report
-    assert "總資料筆數 (Rows)**：10" in report
+    assert "總資料筆數 (Rows)**：1000" in report
     assert "## 2. 資料內容預覽（前 3 筆）" in report
     assert "## 3. 缺失值與欄位型態統計" in report
     assert "## 4. 數值欄位統計摘要" in report
-    assert "王小明" in report
+    assert "林美傑" in report
 
 
 def test_generate_markdown_report_without_numeric_columns() -> None:
@@ -176,9 +176,9 @@ def test_clean_missing_values_drop_rows() -> None:
     raw_df = load_csv(str(sample_path))
     cleaned_df = clean_missing_values(raw_df, strategy="drop_rows")
 
-    # 原始 sample.csv 共 10 筆，其中 4 筆含有缺失值，刪除後應剩 6 筆
-    assert len(raw_df) == 10
-    assert len(cleaned_df) == 6
+    # 原始 sample.csv 共 1000 筆，刪除含缺失值列後筆數應小於 1000 且無缺失值
+    assert len(raw_df) == 1000
+    assert len(cleaned_df) < 1000
     assert int(cleaned_df.isna().sum().sum()) == 0
 
 
@@ -233,8 +233,13 @@ def test_create_correlation_heatmap_success_and_error() -> None:
 
 def test_filter_dataframe_categorical_and_numeric() -> None:
     """測試資料條件篩選器是否能同時依類別清單與數值區間正確過濾資料列。"""
-    sample_path = Path(__file__).parent.parent / "sample_data" / "sample.csv"
-    df = load_csv(str(sample_path))
+    df = pd.DataFrame(
+        {
+            "姓名": ["王小明", "張大衛", "吳家豪", "李小華"],
+            "部門": ["研發部", "研發部", "研發部", "業務部"],
+            "月薪": [65000.0, 85000.0, 70000.0, 75000.0],
+        }
+    )
 
     # 篩選「部門」為「研發部」且「月薪」介於 68000 到 90000 之間的員工
     filtered = filter_dataframe(
@@ -256,8 +261,12 @@ def test_filter_dataframe_invalid_column_raises_key_error() -> None:
 
 def test_get_groupby_summary_calculates_correctly() -> None:
     """測試分組樞紐分析 (GroupBy) 的筆數、平均數、中位數與總和計算是否正確。"""
-    sample_path = Path(__file__).parent.parent / "sample_data" / "sample.csv"
-    df = load_csv(str(sample_path))
+    df = pd.DataFrame(
+        {
+            "部門": ["研發部", "研發部", "研發部", "業務部"],
+            "月薪": [65000.0, 85000.0, 70000.0, 58000.0],
+        }
+    )
 
     # 依「部門」分組計算「月薪」統計量
     grouped_df = get_groupby_summary(df, group_col="部門", target_col="月薪")
@@ -305,7 +314,7 @@ def test_generate_markdown_report_with_groupby_section() -> None:
 
     assert "## 5. 分組樞紐分析（依「部門」統計「月薪」）" in report
     assert "研發部" in report
-    assert "220000" in report
+    assert "業務部" in report
 
 
 

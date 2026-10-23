@@ -318,7 +318,7 @@ def main() -> None:
 
     # 2. 資料預覽區塊
     st.subheader("🔍 資料內容預覽")
-    max_rows = max(1, min(50, basic_info["rows"]))
+    max_rows = max(1, min(200, basic_info["rows"]))
     default_rows = min(10, max_rows)
     preview_count = st.slider(
         "選擇預覽筆數",
